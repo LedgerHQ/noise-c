@@ -115,4 +115,11 @@ AC_ARG_ENABLE(ubsan, AC_HELP_STRING([--enable-ubsan],
 	fi
 ])
 
+AC_ARG_ENABLE(moxie, AC_HELP_STRING([--enable-moxie],
+			[Compile for moxie VM]), [
+	if (test "${enableval}" = "yes"); then
+		AC_DEFINE(__LEDGER_VAULT__)
+	fi
+])
+
 AC_OUTPUT
