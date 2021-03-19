@@ -673,6 +673,17 @@ typedef uint16_t NoisePatternFlags_t;
 const uint8_t *noise_pattern_lookup(int id);
 NoisePatternFlags_t noise_pattern_reverse_flags(NoisePatternFlags_t flags);
 
+
+uint8_t *get_aesgcm_counter(NoiseCipherState *state);
+uint8_t *get_aesgcm_hash(NoiseCipherState *state);
+uint8_t *get_aesgcm_aes(NoiseCipherState *state);
+
+uint8_t *get_aesgcm_ghash_H(NoiseCipherState *state);
+uint8_t *get_aesgcm_ghash_Y(NoiseCipherState *state);
+uint8_t get_aesgcm_ghash_posn(NoiseCipherState *state);
+size_t get_gcm_state_size(NoiseCipherState *state);
+void set_aes_gcm_functions(NoiseCipherState *state);
+
 #ifdef __cplusplus
 };
 #endif
