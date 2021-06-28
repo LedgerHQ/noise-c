@@ -20,38 +20,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BLAKE2_ENDIAN_H__
-#define __BLAKE2_ENDIAN_H__
+#include "internal.h"
 
-#if defined(__WIN32__) || defined(WIN32)
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#endif
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __BYTE_ORDER
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#endif
-#elif defined(__APPLE__)
-#include <machine/endian.h>
-#if !defined( __BYTE_ORDER) && defined(__DARWIN_BYTE_ORDER)
-#define __BYTE_ORDER __DARWIN_BYTE_ORDER
-#endif
-#if !defined( __BIG_ENDIAN) && defined(__DARWIN_BIG_ENDIAN)
-#define __BIG_ENDIAN __DARWIN_BIG_ENDIAN
-#endif
-#if !defined( __LITTLE_ENDIAN) && defined(__DARWIN_LITTLE_ENDIAN)
-#define __LITTLE_ENDIAN __DARWIN_LITTLE_ENDIAN
-#endif
-#elif defined(LEDGER_VAULTHSM)
-#include <machine/endian.h>
-#else
-#include <endian.h>
-#endif
+/* TODO : plug this blake2b implementation to bolos */
+/* cx_blake2b_t hash_state; */
+/* cx_blake2b_init(&hash_state, HASH_SIZE*8); // cx_blake2b_init takes size in bits. */
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define BLAKE2_LITTLE_ENDIAN 1
-#endif
+/* cx_blake2b_init(&hash_state, HASH_SIZE*8); // cx_blake2b_init takes size in bits. */
+/* cx_hash((cx_hash_t *) &hash_state, CX_LAST, compressed->W, compressed->W_len, out, HASH_SIZE); */
 
-#endif
+NoiseHashState *noise_blake2b_new(void)
+{
+  __builtin_trap();
+  return NULL;
+}

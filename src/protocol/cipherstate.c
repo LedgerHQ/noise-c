@@ -534,6 +534,38 @@ int noise_cipherstate_set_nonce(NoiseCipherState *state, uint64_t nonce)
     return NOISE_ERROR_NONE;
 }
 
+#ifdef LEDGER_VAULTAPP
+/**
+ * \brief Sets the nonce value for this cipherstate object.
+ *
+ * \param state The CipherState object.
+ * \param nonce The new nonce value to set.  This must be greater than
+ * or equal to the current nonce value in the state.
+ *
+ * \return NOISE_ERROR_NONE on success.
+ * \return NOISE_ERROR_INVALID_PARAM if \a state is NULL.
+ * \return NOISE_ERROR_INVALID_STATE if the key has not been set yet.
+ *
+ * \warning This function must be used for deciphering only
+ *
+ * \sa noise_cipherstate_init_key()
+ */
+int noise_cipherstate_set_nonce_for_psd(NoiseCipherState *state, uint64_t nonce)
+{
+    /* Bail out if the state is NULL */
+    if (!state)
+        return NOISE_ERROR_INVALID_PARAM;
+
+    /* If the key hasn't been set yet, we cannot do this */
+    if (!state->has_key)
+        return NOISE_ERROR_INVALID_STATE;
+
+    /* Set the nonce and return */
+    state->n = nonce;
+    return NOISE_ERROR_NONE;
+}
+#endif
+
 /**
  * \brief Gets the maximum key length for the supported algorithms.
  *
@@ -552,6 +584,55 @@ int noise_cipherstate_get_max_key_length(void)
 int noise_cipherstate_get_max_mac_length(void)
 {
     return NOISE_MAX_MAC_LEN;
+}
+
+
+
+uint8_t *noise_cipherstate_get_aesgcm_counter(NoiseCipherState *state)
+{
+    return get_aesgcm_counter(state);
+}
+
+
+uint8_t *noise_cipherstate_get_aesgcm_hash(NoiseCipherState *state)
+{
+    return get_aesgcm_hash(state);
+}
+
+
+uint8_t *noise_cipherstate_get_aesgcm_aes(NoiseCipherState *state)
+{
+    return get_aesgcm_aes(state);
+}
+
+
+uint8_t *noise_cipherstate_get_aesgcm_ghash_H(NoiseCipherState *state)
+{
+    return get_aesgcm_ghash_H(state);
+}
+
+
+uint8_t *noise_cipherstate_get_aesgcm_ghash_Y(NoiseCipherState *state)
+{
+    return get_aesgcm_ghash_Y(state);
+}
+
+
+size_t noise_cipherstate_get_size(NoiseCipherState *state)
+{
+    return state->size;
+}
+
+
+size_t noise_cipherstate_get_gcm_state_size(NoiseCipherState *state)
+{
+    return get_gcm_state_size(state);
+}
+
+
+void noise_cipherstate_set_aes_gcm_functions(NoiseCipherState *state)
+{
+    set_aes_gcm_functions(state);
 }
 
 /**@}*/
