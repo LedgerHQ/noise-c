@@ -23,13 +23,20 @@
 
 #include "internal.h"
 
+#if USE_BOLOS_VAULTAPP_BACKEND
+NoiseCipherState *noise_aesgcm_new_bolos(void);
+#elif USE_BOLOS_VAULTHSM_BACKEND
+NoiseCipherState *noise_aesgcm_new_vaulthsm(void);
+#else
+
 #if USE_SODIUM
 NoiseCipherState *noise_aesgcm_new_sodium(void);
 #endif
 #if USE_OPENSSL
 NoiseCipherState *noise_aesgcm_new_openssl(void);
-#else
+#endif
 NoiseCipherState *noise_aesgcm_new_ref(void);
+
 #endif
 
 /**
@@ -40,6 +47,13 @@ NoiseCipherState *noise_aesgcm_new_ref(void);
 NoiseCipherState *noise_aesgcm_new(void)
 {
     NoiseCipherState *state = 0;
+
+#if USE_BOLOS_VAULTAPP_BACKEND
+    state = noise_aesgcm_new_bolos();
+#elif USE_BOLOS_VAULTHSM_BACKEND
+    state = noise_aesgcm_new_vaulthsm();
+#else
+
 #if USE_SODIUM
     if (crypto_aead_aes256gcm_is_available())
         state = noise_aesgcm_new_sodium();
@@ -47,11 +61,11 @@ NoiseCipherState *noise_aesgcm_new(void)
 #if USE_OPENSSL
     if (!state)
         state = noise_aesgcm_new_openssl();
-#else
+#endif
     if (!state)
         state = noise_aesgcm_new_ref();
-#endif
 
+#endif
     return state;
 }
 

@@ -20,38 +20,44 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BLAKE2_ENDIAN_H__
-#define __BLAKE2_ENDIAN_H__
+#include "internal.h"
+#include "crypto/sha2/sha512.h"
 
-#if defined(__WIN32__) || defined(WIN32)
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#endif
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __BYTE_ORDER
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#endif
-#elif defined(__APPLE__)
-#include <machine/endian.h>
-#if !defined( __BYTE_ORDER) && defined(__DARWIN_BYTE_ORDER)
-#define __BYTE_ORDER __DARWIN_BYTE_ORDER
-#endif
-#if !defined( __BIG_ENDIAN) && defined(__DARWIN_BIG_ENDIAN)
-#define __BIG_ENDIAN __DARWIN_BIG_ENDIAN
-#endif
-#if !defined( __LITTLE_ENDIAN) && defined(__DARWIN_LITTLE_ENDIAN)
-#define __LITTLE_ENDIAN __DARWIN_LITTLE_ENDIAN
-#endif
-#elif defined(LEDGER_VAULTHSM)
-#include <machine/endian.h>
-#else
-#include <endian.h>
-#endif
+typedef struct
+{
+    struct NoiseHashState_s parent;
+    sha512_context_t sha512;
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define BLAKE2_LITTLE_ENDIAN 1
-#endif
+} NoiseSHA512State;
 
-#endif
+static void noise_sha512_reset(NoiseHashState *state)
+{
+    NoiseSHA512State *st = (NoiseSHA512State *)state;
+    sha512_reset(&(st->sha512));
+}
+
+static void noise_sha512_update(NoiseHashState *state, const uint8_t *data, size_t len)
+{
+    NoiseSHA512State *st = (NoiseSHA512State *)state;
+    sha512_update(&(st->sha512), data, len);
+}
+
+static void noise_sha512_finalize(NoiseHashState *state, uint8_t *hash)
+{
+    NoiseSHA512State *st = (NoiseSHA512State *)state;
+    sha512_finish(&(st->sha512), hash);
+}
+
+NoiseHashState *noise_sha512_new(void)
+{
+    NoiseSHA512State *state = noise_new(NoiseSHA512State);
+    if (!state)
+        return 0;
+    state->parent.hash_id = NOISE_HASH_SHA512;
+    state->parent.hash_len = 64;
+    state->parent.block_len = 128;
+    state->parent.reset = noise_sha512_reset;
+    state->parent.update = noise_sha512_update;
+    state->parent.finalize = noise_sha512_finalize;
+    return &(state->parent);
+}

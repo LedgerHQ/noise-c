@@ -27,6 +27,12 @@ ED25519_CPPFLAGS = -DED25519_CUSTOMHASH -DED25519_CUSTOMRANDOM
 AM_CPPFLAGS += $(ED25519_CPPFLAGS)
 endif
 
+if USE_BOLOS_VAULTHSM_BACKEND
+AM_CFLAGS += -DUSE_BOLOS_VAULTHSM_BACKEND=1
+AM_CFLAGS += $(vaulthsm_CFLAGS)
+AM_CFLAGS += -I$(top_srcdir)/src/backend/vault-common
+endif
+
 libnoiseprotocol_a_SOURCES = \
 	cipherstate.c \
 	dhstate.c \
@@ -70,9 +76,15 @@ else !USE_OPENSSL
 if USE_LIBSODIUM
 libnoiseprotocol_a_SOURCES += \
 	../backend/sodium/cipher-aesgcm.c
+else !USE_LIBSODIUM
+if USE_BOLOS_VAULTHSM_BACKEND
+libnoiseprotocol_a_SOURCES += \
+	../backend/vault-hsm/cipher-aesgcm.c \
+	../backend/vault-common/aes-gcm.c
 else
 libnoiseprotocol_a_SOURCES += \
 	../backend/ref/cipher-aesgcm.c
+endif
 endif
 endif
 
@@ -89,7 +101,6 @@ libnoiseprotocol_a_SOURCES += \
 else !USE_LIBSODIUM
 libnoiseprotocol_a_SOURCES += \
 	rand_os.c \
-	../backend/ref/cipher-aesgcm.c \
 	../backend/ref/cipher-chachapoly.c \
 	../backend/ref/dh-curve25519.c \
 	../backend/ref/hash-blake2b.c \

@@ -201,3 +201,68 @@ NoiseCipherState *noise_aesgcm_new_ref(void)
     state->parent.decrypt = noise_aesgcm_decrypt;
     return &(state->parent);
 }
+
+
+uint8_t *get_aesgcm_counter(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return st->counter;
+}
+
+
+uint8_t *get_aesgcm_hash(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return st->hash;
+}
+
+
+uint8_t *get_aesgcm_aes(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return (uint8_t *)(st->aes);
+}
+
+
+uint8_t *get_aesgcm_ghash_H(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return (uint8_t*)(st->ghash.H);
+}
+
+
+uint8_t *get_aesgcm_ghash_Y(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return (uint8_t*)(st->ghash.Y);
+}
+
+
+uint8_t get_aesgcm_ghash_posn(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return st->ghash.posn;
+}
+
+size_t get_gcm_state_size(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    return sizeof(*st);
+}
+
+
+void set_aes_gcm_functions(NoiseCipherState *state)
+{
+    NoiseAESGCMState *st = (NoiseAESGCMState *)state;
+    // state->parent.cipher_id = NOISE_CIPHER_AESGCM;
+    // state->parent.key_len = 32;
+    // state->parent.mac_len = 16;
+    st->parent.create = noise_aesgcm_new_ref;
+    st->parent.init_key = noise_aesgcm_init_key;
+    st->parent.encrypt = noise_aesgcm_encrypt;
+    st->parent.decrypt = noise_aesgcm_decrypt;
+}
+
+
+
+//#endif

@@ -20,38 +20,44 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BLAKE2_ENDIAN_H__
-#define __BLAKE2_ENDIAN_H__
+#include "internal.h"
+#include "crypto/blake2/blake2b.h"
 
-#if defined(__WIN32__) || defined(WIN32)
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#endif
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __BYTE_ORDER
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#endif
-#elif defined(__APPLE__)
-#include <machine/endian.h>
-#if !defined( __BYTE_ORDER) && defined(__DARWIN_BYTE_ORDER)
-#define __BYTE_ORDER __DARWIN_BYTE_ORDER
-#endif
-#if !defined( __BIG_ENDIAN) && defined(__DARWIN_BIG_ENDIAN)
-#define __BIG_ENDIAN __DARWIN_BIG_ENDIAN
-#endif
-#if !defined( __LITTLE_ENDIAN) && defined(__DARWIN_LITTLE_ENDIAN)
-#define __LITTLE_ENDIAN __DARWIN_LITTLE_ENDIAN
-#endif
-#elif defined(LEDGER_VAULTHSM)
-#include <machine/endian.h>
-#else
-#include <endian.h>
-#endif
+typedef struct
+{
+    struct NoiseHashState_s parent;
+    BLAKE2b_context_t blake2;
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define BLAKE2_LITTLE_ENDIAN 1
-#endif
+} NoiseBLAKE2bState;
 
-#endif
+static void noise_blake2b_reset(NoiseHashState *state)
+{
+    NoiseBLAKE2bState *st = (NoiseBLAKE2bState *)state;
+    BLAKE2b_reset(&(st->blake2));
+}
+
+static void noise_blake2b_update(NoiseHashState *state, const uint8_t *data, size_t len)
+{
+    NoiseBLAKE2bState *st = (NoiseBLAKE2bState *)state;
+    BLAKE2b_update(&(st->blake2), data, len);
+}
+
+static void noise_blake2b_finalize(NoiseHashState *state, uint8_t *hash)
+{
+    NoiseBLAKE2bState *st = (NoiseBLAKE2bState *)state;
+    BLAKE2b_finish(&(st->blake2), hash);
+}
+
+NoiseHashState *noise_blake2b_new(void)
+{
+    NoiseBLAKE2bState *state = noise_new(NoiseBLAKE2bState);
+    if (!state)
+        return 0;
+    state->parent.hash_id = NOISE_HASH_BLAKE2b;
+    state->parent.hash_len = 64;
+    state->parent.block_len = 128;
+    state->parent.reset = noise_blake2b_reset;
+    state->parent.update = noise_blake2b_update;
+    state->parent.finalize = noise_blake2b_finalize;
+    return &(state->parent);
+}

@@ -20,38 +20,44 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __BLAKE2_ENDIAN_H__
-#define __BLAKE2_ENDIAN_H__
+#include "internal.h"
+#include "crypto/sha2/sha256.h"
 
-#if defined(__WIN32__) || defined(WIN32)
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#endif
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __BYTE_ORDER
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#endif
-#elif defined(__APPLE__)
-#include <machine/endian.h>
-#if !defined( __BYTE_ORDER) && defined(__DARWIN_BYTE_ORDER)
-#define __BYTE_ORDER __DARWIN_BYTE_ORDER
-#endif
-#if !defined( __BIG_ENDIAN) && defined(__DARWIN_BIG_ENDIAN)
-#define __BIG_ENDIAN __DARWIN_BIG_ENDIAN
-#endif
-#if !defined( __LITTLE_ENDIAN) && defined(__DARWIN_LITTLE_ENDIAN)
-#define __LITTLE_ENDIAN __DARWIN_LITTLE_ENDIAN
-#endif
-#elif defined(LEDGER_VAULTHSM)
-#include <machine/endian.h>
-#else
-#include <endian.h>
-#endif
+typedef struct
+{
+    struct NoiseHashState_s parent;
+    sha256_context_t sha256;
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define BLAKE2_LITTLE_ENDIAN 1
-#endif
+} NoiseSHA256State;
 
-#endif
+static void noise_sha256_reset(NoiseHashState *state)
+{
+    NoiseSHA256State *st = (NoiseSHA256State *)state;
+    sha256_reset(&(st->sha256));
+}
+
+static void noise_sha256_update(NoiseHashState *state, const uint8_t *data, size_t len)
+{
+    NoiseSHA256State *st = (NoiseSHA256State *)state;
+    sha256_update(&(st->sha256), data, len);
+}
+
+static void noise_sha256_finalize(NoiseHashState *state, uint8_t *hash)
+{
+    NoiseSHA256State *st = (NoiseSHA256State *)state;
+    sha256_finish(&(st->sha256), hash);
+}
+
+NoiseHashState *noise_sha256_new(void)
+{
+    NoiseSHA256State *state = noise_new(NoiseSHA256State);
+    if (!state)
+        return 0;
+    state->parent.hash_id = NOISE_HASH_SHA256;
+    state->parent.hash_len = 32;
+    state->parent.block_len = 64;
+    state->parent.reset = noise_sha256_reset;
+    state->parent.update = noise_sha256_update;
+    state->parent.finalize = noise_sha256_finalize;
+    return &(state->parent);
+}
